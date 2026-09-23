@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "./include/mm.h"            /* provides kheap_init() and kmalloc() */
 #include "./include/keyboard.h"      /* Keyboard driver API */
+#include "./include/idt.h"           /* IDT API */
 
 /* symbol provided by link.ld */
 extern uint8_t _kernel_end;
@@ -147,15 +148,18 @@ void kernel_main() {
 
     print_str("\nAll tasks completed!\n");
     
-    // Initialize keyboard
+    // Initialize IDT and PIC
+    idt_install();
+
+    // Initialize keyboard state
     keyboard_init();
 
     // Print the shell prompt
     print_str("\nminos> ");
 
-    // Infinite loop polling keyboard
+    // Infinite loop, CPU will wake up on interrupts
     while (1) {
-        keyboard_poll();
+        __asm__ volatile("hlt");
     }
 }
 

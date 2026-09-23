@@ -2,6 +2,7 @@
 #include "../include/io.h"
 #include "../include/print.h"
 #include "../include/shell.h"
+#include "../include/pic.h"
 
 static char input_buffer[INPUT_BUFFER_SIZE];
 static int buffer_index = 0;
@@ -94,4 +95,9 @@ void keyboard_poll() {
             }
         }
     }
+}
+
+void irq1_handler() {
+    keyboard_poll();
+    pic_send_eoi(1);
 }

@@ -10,16 +10,20 @@ BOOT_DIR = boot
 KERNEL_DIR = kernel
 DRIVERS_DIR = drivers
 SHELL_DIR = shell
+INT_DIR = interrupts
 BIN_DIR = bin
 
 # Files
 OBJS = $(BOOT_DIR)/boot.o \
+       $(INT_DIR)/interrupts.o \
        $(KERNEL_DIR)/kernel.o \
        $(DRIVERS_DIR)/print.o \
        $(DRIVERS_DIR)/keyboard.o \
        $(KERNEL_DIR)/mm.o \
        $(KERNEL_DIR)/string.o \
-       $(SHELL_DIR)/shell.o
+       $(SHELL_DIR)/shell.o \
+       $(INT_DIR)/idt.o \
+       $(INT_DIR)/pic.o
 
 TARGET = $(BIN_DIR)/kernel.bin
 
@@ -44,6 +48,12 @@ $(DRIVERS_DIR)/%.o: $(DRIVERS_DIR)/%.c
 
 $(SHELL_DIR)/%.o: $(SHELL_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(INT_DIR)/%.o: $(INT_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(INT_DIR)/%.o: $(INT_DIR)/%.asm
+	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
 	rm -f $(OBJS) $(TARGET)
