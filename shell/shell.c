@@ -2,6 +2,7 @@
 #include "../include/print.h"
 #include "../include/string.h"
 #include "../include/timer.h"
+#include "../include/scheduler.h"
 
 void shell_execute_command(char *cmd) {
     if (strlen(cmd) == 0) {
@@ -36,8 +37,17 @@ void shell_execute_command(char *cmd) {
         print_str("[Stub] Total Heap: 1 MiB, Used: 64 bytes, Free: 1048512 bytes\n");
     } 
     else if (strcmp(cmd, "tasks") == 0) {
-        // Stub for now. Full implementation in Day 7
-        print_str("[Stub] Task 1 (Running), Task 2 (Ready), Task 3 (Ready)\n");
+        int n = get_num_tasks();
+        print_str("Tasks running: ");
+        print_dec(n);
+        print_str("\n");
+        for (int i = 0; i < n; i++) {
+            print_str("  Task ");
+            print_dec(i);
+            if (i == 0) print_str(" (Kernel/Shell)");
+            if (is_task_active(i)) print_str(" - Active\n");
+            else print_str(" - Suspended\n");
+        }
     } 
     else if (strcmp(cmd, "uptime") == 0) {
         uint32_t uptime = get_uptime();

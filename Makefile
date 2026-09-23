@@ -22,6 +22,7 @@ OBJS = $(BOOT_DIR)/boot.o \
        $(KERNEL_DIR)/mm.o \
        $(KERNEL_DIR)/string.o \
        $(KERNEL_DIR)/timer.o \
+       $(KERNEL_DIR)/scheduler.o \
        $(SHELL_DIR)/shell.o \
        $(INT_DIR)/idt.o \
        $(INT_DIR)/pic.o

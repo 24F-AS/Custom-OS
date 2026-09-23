@@ -10,12 +10,19 @@ idt_load:
     lidt [eax]
     ret
 
-; IRQ0 - Timer
+; IRQ0 - Timer (Scheduler)
 global irq0
+extern schedule
 irq0:
     pusha
     cld
-    call irq0_handler
+    
+    push esp          ; Pass current ESP as argument to schedule(uint32_t current_esp)
+    call schedule
+    add esp, 4        ; Clean up argument
+    
+    mov esp, eax      ; eax contains the new ESP returned by schedule
+    
     popa
     iret
 

@@ -1,106 +1,32 @@
 #include "./include/print.h"
 #include <stdint.h>
-#include "./include/mm.h"            /* provides kheap_init() and kmalloc() */
-#include "./include/keyboard.h"      /* Keyboard driver API */
-#include "./include/idt.h"           /* IDT API */
-#include "./include/timer.h"         /* Timer API */
+#include "./include/mm.h"
+#include "./include/keyboard.h"
+#include "./include/idt.h"
+#include "./include/timer.h"
+#include "./include/scheduler.h"
 
-/* symbol provided by link.ld */
 extern uint8_t _kernel_end;
-
-/* TASK + STACK settings */
-#define MAX_TASKS 3
-#define STACK_SIZE 256        // simulated stack size
-
-/* Heap size passed to heap init (1 MiB) */
 #define KHEAP_SIZE (1024 * 1024)
 
-/* ---------------------- PCB STRUCT ---------------------- */
-typedef struct {
-    unsigned char stack[STACK_SIZE];  // simulated stack
-    int sp;                           // stack pointer
-    void (*task)();                   // task function
-    int ticks_left;                   // remaining CPU time
-} PCB;
-
-static PCB tasks[MAX_TASKS];
-static int current = -1;
-
-/* ---------------------- DELAY --------------------------- */
-/* reduced so switching is visible during test runs */
+// Simple delay
 void delay() {
     volatile unsigned long i;
-    for (i = 0; i < 100000000UL; i++);  // ~1 second, adjust if needed
-}
-/* ---------------------- TASK FUNCTIONS ------------------ */
-void task1() { print_msg("Task 1 running\n"); delay(); }
-void task2() { print_msg("Task 2 running\n"); delay(); }
-void task3() { print_msg("Task 3 running\n"); delay(); }
-
-/* ---------------------- PUSH ---------------------------- */
-void push(PCB *p, unsigned char value) {
-    if (p->sp <= 0) return;        // avoid underflow
-    p->stack[p->sp--] = value;
+    for (i = 0; i < 50000000UL; i++);
 }
 
-/* ---------------------- POP ----------------------------- */
-unsigned char pop(PCB *p) {
-    if (p->sp >= STACK_SIZE - 1)
-        return 0;                 // avoid overflow
-    return p->stack[++p->sp];
-}
-
-/* ------------------- INITIALIZE TASKS ------------------- */
-void init_tasks() {
-    tasks[0].task = task1; tasks[0].ticks_left = 3;
-    tasks[1].task = task2; tasks[1].ticks_left = 3;
-    tasks[2].task = task3; tasks[2].ticks_left = 3;
-
-    for (int i = 0; i < MAX_TASKS; i++) {
-        tasks[i].sp = STACK_SIZE - 1;
-
-        /* fake return address */
-        push(&tasks[i], 0xF0 | i);
-
-        /* fake register initial values */
-        push(&tasks[i], 0xAA);  /* EAX */
-        push(&tasks[i], 0xBB);  /* EBX */
-        push(&tasks[i], 0xCC);  /* ECX */
-
-        /* task ID */
-        push(&tasks[i], i + 1);
+void task1() {
+    while(1) {
+        // print_str("T1 ");
+        delay();
     }
 }
 
-/* ---------------------- CHECK DONE ----------------------- */
-int all_done() {
-    for (int i = 0; i < MAX_TASKS; i++)
-        if (tasks[i].ticks_left > 0)
-            return 0;
-    return 1;
-}
-
-/* ---------------------- SCHEDULER ------------------------ */
-void scheduler() {
-
-    do {
-        current = (current + 1) % MAX_TASKS;
-    } while (tasks[current].ticks_left == 0);
-
-    PCB *p = &tasks[current];
-
-    /* save context (simulated) */
-    push(p, 0xDE);
-    push(p, 0xAD);
-    push(p, 0xBE);
-    push(p, 0xEF);
-
-    /* execute 1 tick */
-    p->task();
-    p->ticks_left--;
-
-    /* restore context (simulated) */
-    pop(p); pop(p); pop(p); pop(p);
+void task2() {
+    while(1) {
+        // print_str("T2 ");
+        delay();
+    }
 }
 
 void kernel_main() {
@@ -110,58 +36,33 @@ void kernel_main() {
     print_str("=====================================\n");
     print_str("Members: Ansh, Saurav, Vedant\n\n");
 
-    /* Test Hex and Decimal helpers */
-    print_str("Booting MinOS... Test hex: ");
-    print_hex(0x1BADB002);
-    print_str(" | Test dec: ");
-    print_dec(12345);
-    print_str("\n\n");
-
-    /* Initialize kernel heap (using mm.h API) */
+    /* Initialize kernel heap */
     kheap_init(&_kernel_end, KHEAP_SIZE);
     print_str("kheap initialized (1 MiB)\n");
 
-    /* test allocation using external kmalloc() */
-    char *msg = (char *)kmalloc(64);
-    if (msg) {
-        const char *hello = "kmalloc working: Hello from heap!";
-        int i = 0;
-        while (hello[i] != '\0' && i < 63) {
-            msg[i] = hello[i];
-            i++;
-        }
-        msg[i] = '\0';
+    /* Initialize Scheduler */
+    scheduler_init();
+    create_task(task1);
+    create_task(task2);
+    print_str("Scheduler initialized with 3 tasks (Kernel + T1 + T2)\n");
 
-        print_str("Allocated message: ");
-        print_str(msg);
-        print_str("\n");
-    } else {
-        print_str("kmalloc failed: out of memory\n");
-    }
-
-    /* initialize tasks and run scheduler loop */
-    print_str("\nStarting tasks...\n");
-    init_tasks();
-
-    while (!all_done()) {
-        scheduler();
-    }
-
-    print_str("\nAll tasks completed!\n");
-    
-    // Initialize Timer to 100 Hz
+    /* Initialize Timer to 100 Hz */
     timer_init(100);
 
-    // Initialize IDT and PIC
+    /* Initialize IDT and PIC */
     idt_install();
 
-    // Initialize keyboard state
+    /* Initialize keyboard state */
     keyboard_init();
 
-    // Print the shell prompt
+    /* Print the shell prompt */
     print_str("\nminos> ");
 
-    // Infinite loop, CPU will wake up on interrupts
+    /* 
+     * Infinite loop. This is technically "Task 0".
+     * CPU wakes up on keyboard and timer interrupts.
+     * The timer interrupt will context switch to T1 and T2 automatically!
+     */
     while (1) {
         __asm__ volatile("hlt");
     }

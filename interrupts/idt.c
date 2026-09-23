@@ -28,10 +28,7 @@ void fault_handler() {
     while(1);
 }
 
-void irq0_handler() {
-    timer_handler();
-    pic_send_eoi(0);
-}
+// irq0_handler removed, IRQ0 now directly calls schedule() in scheduler.c
 
 void idt_install() {
     idtp.limit = (sizeof(struct idt_entry) * 256) - 1;
