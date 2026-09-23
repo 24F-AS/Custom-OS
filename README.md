@@ -1,132 +1,58 @@
-# Custom-OS
+# MinOS - Lightweight Educational Operating System
 
-A minimal operating system with a custom bootloader that runs on QEMU. This project demonstrates fundamental OS development concepts including bootloader creation, kernel initialization, and low-level hardware interaction.
+MinOS is a 32-bit x86 custom operating system built from scratch. It avoids over-engineering in favor of clean, readable code to demonstrate core operating system concepts.
 
-## 🚀 Features
+## Features
 
-- **Custom Bootloader**: Written in x86 Assembly to initialize the system
-- **Basic Kernel**: C-based kernel with essential functionality
-- **QEMU Compatible**: Designed to run on QEMU virtual machine
-- **Educational Focus**: Perfect for learning OS development fundamentals
+- **Custom Boot & Kernel Entry**: Boots via Multiboot (GRUB/QEMU) into protected mode assembly and jumps directly to `kernel_main()` in C.
+- **VGA Terminal & Keyboard Driver**: Full hardware abstraction for the VGA buffer and PS/2 Keyboard controller via `inb`/`outb` polling and interrupts.
+- **Interrupts (IDT & PIC)**: Features a fully configured Interrupt Descriptor Table and a remapped Programmable Interrupt Controller handling hardware IRQs cleanly.
+- **System Timer (PIT)**: The Programmable Interval Timer is configured to fire at 100 Hz, maintaining a precise kernel tick counter.
+- **Preemptive Round-Robin Scheduler**: Timer-driven context switching. The CPU halts gracefully, and upon every PIT interrupt, it transparently switches CPU registers and stacks between running tasks.
+- **Memory Management**: Basic kernel heap allocation (`kmalloc`) with runtime memory statistics tracking.
+- **Interactive Shell**: Type commands live! Supports:
+  - `help`: Command list
+  - `clear`: Clears VGA screen
+  - `echo`: Repeats input
+  - `mem`: Shows dynamic heap statistics
+  - `tasks`: Lists active background tasks
+  - `uptime`: Calculates live runtime from PIT ticks
+  - `crash`: Intentionally triggers a CPU exception to demonstrate IDT fault handling
 
-## 📋 Prerequisites
+## Architecture
 
-Before building and running Custom-OS, ensure you have the following installed:
-
-- **NASM** (Netwide Assembler) - for assembling the bootloader
-- **GCC** (GNU Compiler Collection) - for compiling the kernel
-- **LD** (GNU Linker) - for linking object files
-- **QEMU** - for running the OS in a virtual environment
-- **Make** (optional) - for build automation
-
-### Installation on Ubuntu/Debian
-
-```bash
-sudo apt update
-sudo apt install nasm gcc qemu-system-x86 build-essential
+```text
+Boot / Multiboot Entry (boot.asm)
+          ↓
+Kernel Initialization (kernel.c)
+          ↓
+IDT + Interrupt Handling (idt.c)
+          ↓
+PIC Configuration + PIT Timer (100 Hz)
+          ↓
+Preemptive Round-Robin Scheduler (scheduler.c)
+          ↓
+VGA Terminal + PS/2 Keyboard IRQ
+          ↓
+Interactive Shell (shell.c)
 ```
 
-### Installation on macOS
+## How to Build and Run
 
+1. Ensure you have `gcc`, `nasm`, `ld`, and `qemu-system-i386` installed.
+2. Run the build script or Makefile:
 ```bash
-brew install nasm gcc qemu
-```
-
-## 🛠️ Building the Project
-
-The project includes a build script that automates the compilation process:
-
-```bash
-chmod +x build.sh
+make
+# or 
 ./build.sh
 ```
+3. The OS will automatically launch in QEMU!
 
-### Manual Build Steps
+## Project Layout
 
-If you prefer to build manually:
-
-1. **Assemble the bootloader:**
-   ```bash
-   nasm -f elf32 boot.asm -o boot.o
-   ```
-
-2. **Compile the kernel:**
-   ```bash
-   gcc -m32 -c kernel.c -o kernel.o -ffreestanding -fno-pie
-   ```
-
-3. **Link the objects:**
-   ```bash
-   ld -m elf_i386 -T link.ld -o kernel.bin boot.o kernel.o
-   ```
-
-## ▶️ Running the OS
-
-After building, run the OS with QEMU:
-
-```bash
-qemu-system-i386 -kernel kernel.bin
-```
-
-For additional debugging capabilities:
-
-```bash
-qemu-system-i386 -kernel kernel.bin -monitor stdio
-```
-
-## 📁 Project Structure
-
-```
-Custom-OS/
-├── boot.asm        # Bootloader written in x86 Assembly
-├── kernel.c        # Main kernel code in C
-├── link.ld         # Linker script for memory layout
-├── build.sh        # Build automation script
-├── boot.o          # Compiled bootloader object file
-├── kernel.o        # Compiled kernel object file
-├── kernel.bin      # Final bootable kernel binary
-└── README.md       # Project documentation
-```
-
-## 🔧 File Descriptions
-
-- **boot.asm**: Contains the bootloader code that initializes the CPU and loads the kernel
-- **kernel.c**: The main kernel implementation with core functionality
-- **link.ld**: Defines memory layout and linking instructions
-- **build.sh**: Automated build script that compiles all components
-
-## 🎓 Learning Resources
-
-This project is ideal for understanding:
-
-- Bootloader development
-- x86 Assembly programming
-- Bare-metal C programming
-- Memory management basics
-- OS initialization process
-- Cross-compilation techniques
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Build fails with "command not found":**
-- Ensure all prerequisites are installed correctly
-- Check that NASM and GCC are in your PATH
-
-**QEMU doesn't start:**
-- Verify QEMU is installed: `qemu-system-i386 --version`
-- Check that kernel.bin was created successfully
-
-**Kernel doesn't boot:**
-- Verify the linker script addresses are correct
-- Check bootloader is properly loading the kernel
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-
----
-
-**Note**: This is an educational project. It is not intended for production use.
+- `boot/`: Multiboot headers and assembly entry point.
+- `kernel/`: Core kernel logic, scheduler, memory manager, and string utilities.
+- `drivers/`: VGA terminal and keyboard interface.
+- `interrupts/`: IDT, PIC remapping, and assembly ISR stubs.
+- `shell/`: Interactive command-line environment.
+- `include/`: C header files.
