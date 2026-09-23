@@ -3,6 +3,7 @@
 #include "./include/mm.h"            /* provides kheap_init() and kmalloc() */
 #include "./include/keyboard.h"      /* Keyboard driver API */
 #include "./include/idt.h"           /* IDT API */
+#include "./include/timer.h"         /* Timer API */
 
 /* symbol provided by link.ld */
 extern uint8_t _kernel_end;
@@ -148,6 +149,9 @@ void kernel_main() {
 
     print_str("\nAll tasks completed!\n");
     
+    // Initialize Timer to 100 Hz
+    timer_init(100);
+
     // Initialize IDT and PIC
     idt_install();
 

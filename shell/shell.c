@@ -1,6 +1,7 @@
 #include "../include/shell.h"
 #include "../include/print.h"
 #include "../include/string.h"
+#include "../include/timer.h"
 
 void shell_execute_command(char *cmd) {
     if (strlen(cmd) == 0) {
@@ -39,8 +40,10 @@ void shell_execute_command(char *cmd) {
         print_str("[Stub] Task 1 (Running), Task 2 (Ready), Task 3 (Ready)\n");
     } 
     else if (strcmp(cmd, "uptime") == 0) {
-        // Stub for now. Full implementation in Day 6
-        print_str("[Stub] Uptime: 0 seconds\n");
+        uint32_t uptime = get_uptime();
+        print_str("Uptime: ");
+        print_dec(uptime);
+        print_str(" seconds\n");
     } 
     else {
         print_str("Unknown command: ");

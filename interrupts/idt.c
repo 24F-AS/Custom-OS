@@ -3,6 +3,8 @@
 #include "../include/print.h"
 #include <stdint.h>
 
+#include "../include/timer.h"
+
 struct idt_entry idt[256];
 struct idt_ptr idtp;
 
@@ -27,7 +29,7 @@ void fault_handler() {
 }
 
 void irq0_handler() {
-    // Stub for Timer (Day 6)
+    timer_handler();
     pic_send_eoi(0);
 }
 
