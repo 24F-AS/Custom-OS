@@ -41,6 +41,13 @@ void shell_execute_command(char *cmd) {
         print_str("  Used:  "); print_dec(used); print_str(" bytes\n");
         print_str("  Free:  "); print_dec(free); print_str(" bytes\n");
     } 
+    else if (strcmp(cmd, "crash") == 0) {
+        print_str("Triggering divide-by-zero exception...\n");
+        int a = 1;
+        int b = 0;
+        int c = a / b;
+        (void)c; // Prevent unused variable warning
+    } 
     else if (strcmp(cmd, "tasks") == 0) {
         int n = get_num_tasks();
         print_str("Tasks running: ");
