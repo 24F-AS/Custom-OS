@@ -101,20 +101,27 @@ void scheduler() {
     pop(p); pop(p); pop(p); pop(p);
 }
 
-/* ------------------------ KERNEL MAIN -------------------- */
 void kernel_main() {
-    clear_screen();
-    print_msg("TEAM-NOT HUMANS T063\n");
-    print_msg("Members: Ansh, Saurav, Vedant\n\n");
+    terminal_init();
+    print_str("=====================================\n");
+    print_str("       MinOS - Lightweight OS        \n");
+    print_str("=====================================\n");
+    print_str("Members: Ansh, Saurav, Vedant\n\n");
 
-    /* STEP 4+: Initialize kernel heap (using mm.h API) */
+    /* Test Hex and Decimal helpers */
+    print_str("Booting MinOS... Test hex: ");
+    print_hex(0x1BADB002);
+    print_str(" | Test dec: ");
+    print_dec(12345);
+    print_str("\n\n");
+
+    /* Initialize kernel heap (using mm.h API) */
     kheap_init(&_kernel_end, KHEAP_SIZE);
-    print_msg("kheap initialized (1 MiB)\n");
+    print_str("kheap initialized (1 MiB)\n");
 
     /* test allocation using external kmalloc() */
     char *msg = (char *)kmalloc(64);
     if (msg) {
-        /* write a string into allocated memory and show it */
         const char *hello = "kmalloc working: Hello from heap!";
         int i = 0;
         while (hello[i] != '\0' && i < 63) {
@@ -123,20 +130,24 @@ void kernel_main() {
         }
         msg[i] = '\0';
 
-        print_msg("Allocated message: ");
-        print_msg(msg);
-        print_msg("\n");
+        print_str("Allocated message: ");
+        print_str(msg);
+        print_str("\n");
     } else {
-        print_msg("kmalloc failed: out of memory\n");
+        print_str("kmalloc failed: out of memory\n");
     }
 
     /* initialize tasks and run scheduler loop */
+    print_str("\nStarting tasks...\n");
     init_tasks();
 
     while (!all_done()) {
         scheduler();
     }
 
-    print_msg("\nAll tasks completed!\n");
+    print_str("\nAll tasks completed!\n");
+    
+    // Print the shell prompt
+    print_str("\nminos> ");
 }
 
