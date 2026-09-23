@@ -3,6 +3,7 @@
 #include "../include/string.h"
 #include "../include/timer.h"
 #include "../include/scheduler.h"
+#include "../include/mm.h"
 
 void shell_execute_command(char *cmd) {
     if (strlen(cmd) == 0) {
@@ -33,8 +34,12 @@ void shell_execute_command(char *cmd) {
         print_str("\n");
     } 
     else if (strcmp(cmd, "mem") == 0) {
-        // Stub for now. Full implementation in Day 8
-        print_str("[Stub] Total Heap: 1 MiB, Used: 64 bytes, Free: 1048512 bytes\n");
+        uint32_t total, used, free;
+        get_memory_stats(&total, &used, &free);
+        print_str("Kernel Heap Statistics:\n");
+        print_str("  Total: "); print_dec(total); print_str(" bytes\n");
+        print_str("  Used:  "); print_dec(used); print_str(" bytes\n");
+        print_str("  Free:  "); print_dec(free); print_str(" bytes\n");
     } 
     else if (strcmp(cmd, "tasks") == 0) {
         int n = get_num_tasks();

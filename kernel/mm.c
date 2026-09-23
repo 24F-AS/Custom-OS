@@ -27,3 +27,9 @@ void *kmalloc(unsigned int size) {
     current_heap_ptr += size;
     return ptr;
 }
+
+void get_memory_stats(uint32_t *total, uint32_t *used, uint32_t *free) {
+    if (total) *total = heap_size;
+    if (used) *used = (current_heap_ptr - heap_start);
+    if (free) *free = heap_size - (current_heap_ptr - heap_start);
+}
