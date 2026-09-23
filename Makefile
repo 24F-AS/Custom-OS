@@ -9,6 +9,7 @@ ASFLAGS = -f elf32
 BOOT_DIR = boot
 KERNEL_DIR = kernel
 DRIVERS_DIR = drivers
+SHELL_DIR = shell
 BIN_DIR = bin
 
 # Files
@@ -16,7 +17,9 @@ OBJS = $(BOOT_DIR)/boot.o \
        $(KERNEL_DIR)/kernel.o \
        $(DRIVERS_DIR)/print.o \
        $(DRIVERS_DIR)/keyboard.o \
-       $(KERNEL_DIR)/mm.o
+       $(KERNEL_DIR)/mm.o \
+       $(KERNEL_DIR)/string.o \
+       $(SHELL_DIR)/shell.o
 
 TARGET = $(BIN_DIR)/kernel.bin
 
@@ -37,6 +40,9 @@ $(KERNEL_DIR)/%.o: $(KERNEL_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(DRIVERS_DIR)/%.o: $(DRIVERS_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(SHELL_DIR)/%.o: $(SHELL_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

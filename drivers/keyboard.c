@@ -1,6 +1,7 @@
 #include "../include/keyboard.h"
 #include "../include/io.h"
 #include "../include/print.h"
+#include "../include/shell.h"
 
 static char input_buffer[INPUT_BUFFER_SIZE];
 static int buffer_index = 0;
@@ -79,8 +80,9 @@ void keyboard_poll() {
                 } else if (c == '\n') {
                     // Enter key
                     print_char('\n');
-                    // We just leave the buffer as is so the shell can read it.
-                    // The shell will process it and then call clear_input_buffer()
+                    shell_execute_command(input_buffer);
+                    clear_input_buffer();
+                    print_str("minos> ");
                 } else {
                     // Normal character
                     if (buffer_index < INPUT_BUFFER_SIZE - 1) {
