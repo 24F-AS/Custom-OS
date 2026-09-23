@@ -1,7 +1,7 @@
-/* kernel.c */
 #include "./include/print.h"
 #include <stdint.h>
 #include "./include/mm.h"            /* provides kheap_init() and kmalloc() */
+#include "./include/keyboard.h"      /* Keyboard driver API */
 
 /* symbol provided by link.ld */
 extern uint8_t _kernel_end;
@@ -147,7 +147,15 @@ void kernel_main() {
 
     print_str("\nAll tasks completed!\n");
     
+    // Initialize keyboard
+    keyboard_init();
+
     // Print the shell prompt
     print_str("\nminos> ");
+
+    // Infinite loop polling keyboard
+    while (1) {
+        keyboard_poll();
+    }
 }
 

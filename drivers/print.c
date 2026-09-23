@@ -27,6 +27,15 @@ void print_char(char c) {
         cursor_col = 0;
     } else if (c == '\r') {
         cursor_col = 0;
+    } else if (c == '\b') {
+        if (cursor_col > 0) {
+            cursor_col--;
+        } else if (cursor_row > 0) {
+            cursor_row--;
+            cursor_col = VGA_COLS - 1;
+        }
+        int index = cursor_row * VGA_COLS + cursor_col;
+        vga_buffer[index] = (unsigned short)term_color << 8 | ' ';
     } else {
         int index = cursor_row * VGA_COLS + cursor_col;
         vga_buffer[index] = (unsigned short)term_color << 8 | c;

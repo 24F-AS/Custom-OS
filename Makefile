@@ -15,6 +15,7 @@ BIN_DIR = bin
 OBJS = $(BOOT_DIR)/boot.o \
        $(KERNEL_DIR)/kernel.o \
        $(DRIVERS_DIR)/print.o \
+       $(DRIVERS_DIR)/keyboard.o \
        $(KERNEL_DIR)/mm.o
 
 TARGET = $(BIN_DIR)/kernel.bin
